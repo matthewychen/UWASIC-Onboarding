@@ -18,8 +18,10 @@ reg nCS_FF1out;
 reg nCS_postFF;
 
 reg [3:0] [7:0] SPI_regs; //4 addr/8 bit per addr
-reg [16:0] transaction_dat;
+reg [15:0] transaction_dat;
 reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
+
+reg transaction_posedge;
 
 //Flags
 reg transaction_ready; //nCS deasserted
@@ -46,15 +48,33 @@ always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
     nCS_postFF <= nCS_FF1out;
 end
 
-always @(posedge clk or negedge nCS_postFF) begin
-    if (!nCS_postFF) begin //not ready
+always@(negedge nCS_postFF) begin
+    transaction_curr_bit <= 4'd0; //start writing from 0
+end
+
+always@(posedge nCS_postFF) begin
+    transaction_posedge <= 1;
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin //not ready
         transaction_ready <= 1'b0;
     end
-    else if (nCS_postFF == 1'b0) begin //transaction start
+    else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
+        transaction_dat[transaction_curr_bit] = COPI_postFF;
+        transaction_curr_bit = transaction_curr_bit + 1;
     end
     else begin 
-     //need posedge detection for ncs, if posedge found then transaction has ended
-     //
+        if(transaction_posedge) begin
+            transaction_ready <= 1'b1;
+        end
+        //if transaction processed then the current data is not needed and can await the next transaction
+        else if(transaction_processed) begin
+            transaction_ready <= 1'b0;
+        end
+    end
+    if(transaction_posedge == 1) begin //reset. The posedge detection should be a pulse only.
+        transaction_posedge <= 0;
     end
 end
 
@@ -64,11 +84,19 @@ always @(posedge clk or negedge rst_n) begin
         transaction_processed <= 1'b0;
     end else if (transaction_ready && !transaction_processed) begin
         // Transaction is ready and not yet processed
-        // omitted code
+        if(transaction_dat[15] == 0) begin
+            //ignore read command
+        end
+        if(transaction_dat[14:8]>4) begin
+            //no action as address is out of range
+        end
+        else begin
+            SPI_regs[transaction_dat[14:8]][7:0] <= transaction_dat[7:0];
+        end
         // Set the processed flag
         transaction_processed <= 1'b1;
     end else if (!transaction_ready && transaction_processed) begin
-        // Reset processed flag when ready flag is cleared
+        // Reset processed flag when ready flag is cleared, as the new data will not have been processed yet
         transaction_processed <= 1'b0;
     end
 end
