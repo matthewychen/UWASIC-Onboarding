@@ -44,9 +44,9 @@ module tt_um_uwasic_onboarding_matthew_chen(
     // Add uio_in and ui_in[7:3] to the list of unused signals:
     wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};
 
-    spi_peripheral spi_peripheral_inst (
-      .clk(clk),
-      .rst_n(rst_n),
-    );
+ //   spi_peripheral spi_peripheral_inst (
+ //     .clk(clk),
+ //     .rst_n(rst_n),
+ //   );
 
 endmodule
