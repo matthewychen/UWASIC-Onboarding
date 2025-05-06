@@ -1,10 +1,18 @@
-module spi_peripheral(
+module spi_peripheral#(
+    parameter MAX_ADDR = 4
+)
+(
     input wire       SCLK,// clock
     input wire       COPI,//in from controller
     input wire       nCS,//start transaction on negedge
     input wire       clk,//
-    input wire       rst_n//
+    input wire       rst_n,//
 
+    output wire en_reg_out_7_0,
+    output wire en_reg_out_15_8, 
+    output wire en_reg_pwm_7_0,
+    output wire en_reg_pwm_15_8,
+    output wire pwm_duty_cycle 
 );
 
 reg SCLK_FF1out;
@@ -87,7 +95,7 @@ always @(posedge clk or negedge rst_n) begin
         if(transaction_dat[15] == 0) begin
             //ignore read command
         end
-        if(transaction_dat[14:8]>4) begin
+        if(transaction_dat[14:8]>MAX_ADDR) begin
             //no action as address is out of range
         end
         else begin
@@ -100,4 +108,12 @@ always @(posedge clk or negedge rst_n) begin
         transaction_processed <= 1'b0;
     end
 end
+
+//drive outputs on register update
+assign en_reg_out_7_0 = SPI_regs[0][7:0];
+assign en_reg_out_15_8 = SPI_regs[1][7:0];
+assign en_reg_pwm_7_0 = SPI_regs[2][7:0];
+assign en_reg_pwm_15_8 = SPI_regs[3][7:0];
+assign pwm_duty_cycle = SPI_regs[4][7:0];
+
 endmodule
