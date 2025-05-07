@@ -63,6 +63,7 @@ end
 
 always@(negedge nCS_postFF) begin
     transaction_curr_bit <= 4'd15; //start writing from MSB.
+    transaction_dat <= 16'bx; //reset to neutral state
 end
 
 always@(posedge nCS_postFF) begin
