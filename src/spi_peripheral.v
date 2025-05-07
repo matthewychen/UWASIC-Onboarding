@@ -66,6 +66,7 @@ end
 
 always@(posedge nCS_postFF) begin
     transaction_posedge <= 1;
+    transaction_ready <= 1'b1;
 end
 
 
@@ -79,7 +80,7 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
     end
     else begin 
         if(transaction_posedge) begin
-            transaction_ready <= 1'b1;
+            //transaction_ready <= 1'b1;
         end
         //if transaction processed then the current data is not needed and can await the next transaction
         else if(transaction_processed) begin
@@ -94,9 +95,7 @@ end
 reg [7:0] testreg;
 // Update registers only after the complete transaction has finished and been validated
 always @(posedge clk or negedge rst_n) begin
-   
     reg [6:0] addr;
-    
     if (!rst_n) begin
         transaction_processed <= 1'b0;
     end else if (transaction_ready && !transaction_processed) begin
