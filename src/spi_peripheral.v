@@ -76,7 +76,7 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
         transaction_ready <= 1'b0;
     end
     else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
-        transaction_dat[transaction_curr_bit] = COPI_postFF;
+        transaction_dat[transaction_curr_bit] <= COPI_postFF;
         transaction_curr_bit = transaction_curr_bit - 1;
     end
 end
