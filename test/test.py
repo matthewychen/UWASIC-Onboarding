@@ -199,7 +199,7 @@ async def test_pwm_freq(dut):
     await ClockCycles(dut.clk, 1000) 
     
     dut._log.info("Write transaction, address 0x04, data 50% - enable PWM on uio_out")
-    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0b1000000000000000)  # Write transaction
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x7F)  # Write transaction
     await ClockCycles(dut.clk, 1000) 
     
     #all outputs set successfully
