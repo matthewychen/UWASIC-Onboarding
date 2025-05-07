@@ -21,11 +21,11 @@ module tt_um_uwasic_onboarding_matthew_chen(
 
 always@(*) begin
   case(addr_out)
-    6'd0: uo_out <= en_reg_out_7_0;
-    6'd1: uo_out <= en_reg_out_15_8;
-    6'd2: uo_out <= en_reg_pwm_7_0;
-    6'd3: uo_out <= en_reg_pwm_15_8;
-    6'd4: uo_out <= pwm_duty_cycle;
+    7'd0: uo_out <= en_reg_out_7_0;
+    7'd1: uo_out <= en_reg_out_15_8;
+    7'd2: uo_out <= en_reg_pwm_7_0;
+    7'd3: uo_out <= en_reg_pwm_15_8;
+    7'd4: uo_out <= pwm_duty_cycle;
     default: uo_out <= 8'b0;
   endcase
 end

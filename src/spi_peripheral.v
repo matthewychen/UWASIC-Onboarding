@@ -1,4 +1,4 @@
-module spi_peripheral#(
+module spi_peripheral #(
     parameter MAX_ADDR = 4
 )
 (
