@@ -177,7 +177,6 @@ async def test_pwm_freq(dut):
     
     desired_period = 333333.33 #ns
     time_elapsed = 0.0 #ns
-    posedge_clk = 0 #cycles
     
     #begin write transactions
     
@@ -203,27 +202,40 @@ async def test_pwm_freq(dut):
     await ClockCycles(dut.clk, 1000) 
     
     #all outputs set successfully
+    #start sampling
     
-    await RisingEdge(dut.uo_out[0])
     #start loop
-    from cocotb.triggers import Timer
-
-    # Wait for high value first
-    while dut.uo_out.value & 0x1 != 1:
-        await RisingEdge(dut.clk)
-
-    # Capture start time
-    start_time = cocotb.utils.get_sim_time(units="ns")
-
-    # Wait for low value 
-    while dut.uo_out.value & 0x1 != 0:
-        await RisingEdge(dut.clk)
-
-    # Calculate period
-    period = cocotb.utils.get_sim_time(units="ns") - start_time
-
-    # Assert with the calculated period instead of clock count
+    PWM_1ago = 0
+    PWM_2ago = 0
+    
+    
+    while True: 
+        await ClockCycles(dut.clk, 1)
+        PWM_2ago = PWM_1ago
+        PWM_1ago = dut.uo_out[0]
+        
+        if(PWM_1ago == 1 and PWM_2ago == 0):
+            #posedge detected
+            start_time = cocotb.utils.get_sim_time(units="ns")
+            break
+    
+    PWM_1ago = 0
+    PWM_2ago = 0
+    
+    while True: 
+        await ClockCycles(dut.clk, 1)
+        PWM_2ago = PWM_1ago
+        PWM_1ago = dut.uo_out[0]
+        
+        if(PWM_1ago == 1 and PWM_2ago == 0):
+            #posedge detected
+            period = cocotb.utils.get_sim_time(units="ns") - start_time
+            break
+    
     assert period >= (333333.33*0.99) and period <= (333333.33*1.01), f"Period not within specified range, got {period} ns."
+            
+            
+    assert posedge_clk*100 >= (333333.33*1.01) and posedge_clk*100 <= (333333.33*0.99), f"Freq not within specified 300khz range, got {posedge_clk*100} period."
             
     dut._log.info("PWM Frequency test completed successfully")
 
