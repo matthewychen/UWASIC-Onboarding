@@ -12,7 +12,8 @@ module spi_peripheral#(
     output wire [7:0] en_reg_out_15_8, 
     output wire [7:0] en_reg_pwm_7_0,
     output wire [7:0] en_reg_pwm_15_8,
-    output wire [7:0] pwm_duty_cycle 
+    output wire [7:0] pwm_duty_cycle.
+    output wire [6:0] addr_out
 );
 
 reg SCLK_FF1out;
@@ -109,10 +110,11 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //drive outputs on register update
-assign en_reg_out_7_0 = testreg[7:0];
+assign en_reg_out_7_0 = SPI_regs[0];
 assign en_reg_out_15_8 = SPI_regs[1];
 assign en_reg_pwm_7_0 = SPI_regs[2];
 assign en_reg_pwm_15_8 = SPI_regs[3];
 assign pwm_duty_cycle = SPI_regs[4];
+assign addr_out[6:0] = addr[6:0];
 
 endmodule
