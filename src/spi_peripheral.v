@@ -95,11 +95,15 @@ always @(posedge clk or negedge rst_n) begin
         if(transaction_dat[15] == 0) begin
             //ignore read command
         end
-        if(transaction_dat[14:8]>MAX_ADDR) begin
-            //no action as address is out of range
-        end
         else begin
-            SPI_regs[transaction_dat[14:8]][7:0] <= transaction_dat[7:0];
+            reg [6:0] addr;
+            addr = transaction_dat[14:8];
+            if(addr > MAX_ADDR) begin
+                //no action as address is out of range
+            end
+            else begin
+                SPI_regs[addr][7:0] <= transaction_dat[7:0];
+            end
         end
         // Set the processed flag
         transaction_processed <= 1'b1;
