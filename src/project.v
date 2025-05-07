@@ -51,7 +51,8 @@ end
       .en_reg_pwm_7_0(en_reg_pwm_7_0),
       .en_reg_pwm_15_8(en_reg_pwm_15_8),
       .pwm_duty_cycle(pwm_duty_cycle),
-      .out({uio_out, uo_out})
+      .out()
+      //.out({uio_out, uo_out})
     );
     // Add uio_in and ui_in[7:3] to the list of unused signals:
     wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};

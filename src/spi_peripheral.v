@@ -28,6 +28,8 @@ reg nCS_FF1out;
 reg nCS_FF2out;
 reg nCS_postFF;
 
+reg [6:0] addr;
+
 reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to MAX_ADDR
 reg [15:0] transaction_dat;
 reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
@@ -81,7 +83,6 @@ end
 reg [7:0] testreg;
 // Update registers only after the complete transaction has finished and been validated
 always @(posedge clk or negedge rst_n) begin
-    reg [6:0] addr;
     if (!rst_n) begin
         transaction_processed <= 1'b0;
     end 
