@@ -20,7 +20,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
   assign uio_oe = 8'hFF;
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
+  assign uo_out  = en_reg_out_7_0;  // Example: ou_out is the sum of ui_in and uio_in
   assign uio_out = 0;
   assign uio_oe  = 0;
 
