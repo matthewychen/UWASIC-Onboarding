@@ -25,7 +25,7 @@ reg COPI_postFF;
 reg nCS_FF1out;
 reg nCS_postFF;
 
-reg [3:0] [7:0] SPI_regs; //4 addr/8 bit per addr
+reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to MAX_ADDR
 reg [15:0] transaction_dat;
 reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
 
