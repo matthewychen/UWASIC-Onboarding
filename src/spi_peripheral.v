@@ -31,8 +31,6 @@ reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to M
 reg [15:0] transaction_dat;
 reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
 
-reg transaction_posedge;
-
 //Flags
 reg transaction_ready; //nCS deasserted
 reg transaction_processed; //correct data already written to registers, can discard current transaction
@@ -65,7 +63,6 @@ always@(negedge nCS_postFF) begin
 end
 
 always@(posedge nCS_postFF) begin
-    transaction_posedge <= 1;
     transaction_ready <= 1'b1;
 end
 
@@ -79,16 +76,10 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
         transaction_curr_bit = transaction_curr_bit - 1;
     end
     else begin 
-        if(transaction_posedge) begin
-            //transaction_ready <= 1'b1;
-        end
         //if transaction processed then the current data is not needed and can await the next transaction
-        else if(transaction_processed) begin
+        if(transaction_processed) begin
             transaction_ready <= 1'b0;
         end
-    end
-    if(transaction_posedge == 1) begin //reset. The posedge detection should be a pulse only.
-        transaction_posedge <= 0;
     end
 end
 
