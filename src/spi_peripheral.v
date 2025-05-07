@@ -88,6 +88,9 @@ end
 
 // Update registers only after the complete transaction has finished and been validated
 always @(posedge clk or negedge rst_n) begin
+   
+    reg [6:0] addr;
+    
     if (!rst_n) begin
         transaction_processed <= 1'b0;
     end else if (transaction_ready && !transaction_processed) begin
@@ -96,7 +99,6 @@ always @(posedge clk or negedge rst_n) begin
             //ignore read command
         end
         else begin
-            reg [6:0] addr;
             addr = transaction_dat[14:8];
             if(addr > MAX_ADDR) begin
                 //no action as address is out of range
@@ -108,7 +110,7 @@ always @(posedge clk or negedge rst_n) begin
         // Set the processed flag
         transaction_processed <= 1'b1;
     end else if (!transaction_ready && transaction_processed) begin
-        // Reset processed flag when ready flag is cleared, as the new data will not have been processed yet
+        // Reset processed flag when ready flag is cleared
         transaction_processed <= 1'b0;
     end
 end
