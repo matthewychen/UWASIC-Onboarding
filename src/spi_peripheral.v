@@ -20,6 +20,7 @@ reg SCLK_FF2out;
 reg SCLK_postFF;
 
 reg COPI_FF1out;
+reg COPI_FF2out;
 reg COPI_postFF;
 
 reg nCS_FF1out;
@@ -50,7 +51,8 @@ end
 
 always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
     COPI_FF1out <= COPI;
-    COPI_postFF <= COPI_FF1out;
+    COPI_FF2out <= COPI_FF1out; //one more clk delay for accurate data capture and avoid race condition
+    COPI_postFF <= COPI_FF2out;
 
     nCS_FF1out <= nCS;
     nCS_postFF <= nCS_FF1out;
@@ -69,15 +71,13 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
     if (!rst_n) begin //not ready
         transaction_ready <= 1'b0;
     end
-    if (transaction_curr_bit == 4'd15)
-                transaction_ready <= 1'b1;
     else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
         transaction_dat[transaction_curr_bit] = COPI_postFF;
         transaction_curr_bit = transaction_curr_bit + 1;
     end
-    else begin
+    else begin 
         if(transaction_posedge) begin
-            //transaction_ready <= 1'b1;
+            transaction_ready <= 1'b1;
         end
         //if transaction processed then the current data is not needed and can await the next transaction
         else if(transaction_processed) begin
