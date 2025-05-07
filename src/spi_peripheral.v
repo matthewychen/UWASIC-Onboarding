@@ -24,6 +24,7 @@ reg COPI_FF2out;
 reg COPI_postFF;
 
 reg nCS_FF1out;
+reg nCS_FF2out;
 reg nCS_postFF;
 
 reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to MAX_ADDR
@@ -55,11 +56,12 @@ always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
     COPI_postFF <= COPI_FF2out;
 
     nCS_FF1out <= nCS;
-    nCS_postFF <= nCS_FF1out;
+    nCS_FF2out <= nCS_FF1out;
+    nCS_postFF <= nCS_FF2out;
 end
 
 always@(negedge nCS_postFF) begin
-    transaction_curr_bit <= 4'd0; //start writing from 0
+    transaction_curr_bit <= 4'd15; //start writing from MSB.
 end
 
 always@(posedge nCS_postFF) begin
@@ -73,7 +75,7 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
     end
     else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
         transaction_dat[transaction_curr_bit] = COPI_postFF;
-        transaction_curr_bit = transaction_curr_bit + 1;
+        transaction_curr_bit = transaction_curr_bit - 1;
     end
     else begin 
         if(transaction_posedge) begin
