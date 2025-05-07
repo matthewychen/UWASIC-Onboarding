@@ -45,9 +45,9 @@ module tt_um_uwasic_onboarding_matthew_chen(
     wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};
 
    spi_peripheral spi_peripheral_inst (
-      .SCLK(SCLK),
-      .COPI(COPI),
-      .nCS(nCS),
+      .SCLK(ui_in[0]),
+      .COPI(ui_in[1]),
+      .nCS(ui_in[2]),
       .clk(clk),
       .rst_n(rst_n),
 
