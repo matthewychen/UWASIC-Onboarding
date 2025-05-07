@@ -4,6 +4,7 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from cocotb.triggers import FallingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
@@ -118,8 +119,8 @@ async def test_spi(dut):
     ui_in_val = await send_spi_transaction(dut, 1, 0x30, 0xAA)
     await ClockCycles(dut.clk, 100)
 
-    dut._log.info("Read transaction (invalid), address 0x00, data 0xBE")
-    ui_in_val = await send_spi_transaction(dut, 0, 0x00, 0xBE)
+    dut._log.info("Read transaction (invalid), address 0x30, data 0xBE")
+    ui_in_val = await send_spi_transaction(dut, 0, 0x30, 0xBE)
     assert dut.uo_out.value == 0xF0, f"Expected 0xF0, got {dut.uo_out.value}"
     await ClockCycles(dut.clk, 100)
     
@@ -151,11 +152,75 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
-    # Write your test here
+    #set registers appropriately
+    #measure time delay between posedges to identify freq (1% error)
+    #assert
+    ##note sclk period is 5100 ns and clk is 100 ns (10 MHz)
+    
+    dut._log.info("Start PWM test")
+
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    
+    desired_period = 333333.33 #ns
+    time_elapsed = 0.0 #ns
+    posedge_clk = 0 #cycles
+    
+    #begin write transactions
+    
+    #enable all inputs and outputs for output and PWM
+    dut._log.info("Write transaction, address 0x00, data 0xFF - enable uo_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x01, data 0xFF - enable uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x01, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x02, data 0xFF - enable PWM on uo_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x03, data 0xFF - enable PWM on uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x03, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x04, data 50% - enable PWM on uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0b1000000000000000)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    #all outputs set successfully
+    
+    await RisingEdge(dut.uo_out[0])
+    #start loop
+    while True: 
+        await RisingEdge(dut.clk)
+        posedge_clk +=1
+        if not (dut.uo_out[0].value == 0b1):
+            break
+        
+    assert posedge_clk*100 >= (333333.33*1.01) and posedge_clk*100 <= (333333.33*0.99), f"Freq not within specified 300khz range, got {posedge_clk*100} period."
+            
     dut._log.info("PWM Frequency test completed successfully")
 
 
 @cocotb.test()
 async def test_pwm_duty(dut):
-    # Write your test here
+    #set registers appropriately
+    #measure time delay between posedge/negedge to determine positive time
+    #measure time delay between posedges to identify duty cycle (1% error)
+    #assert
     dut._log.info("PWM Duty Cycle test completed successfully")

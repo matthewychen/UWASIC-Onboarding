@@ -19,21 +19,18 @@ module tt_um_uwasic_onboarding_matthew_chen(
 
   assign uio_oe = 8'hFF;
 
-always@(*) begin
-  case(addr_out)
-    7'd0: uo_out <= en_reg_out_7_0;
-    7'd1: uo_out <= en_reg_out_15_8;
-    7'd2: uo_out <= en_reg_pwm_7_0;
-    7'd3: uo_out <= en_reg_pwm_15_8;
-    7'd4: uo_out <= pwm_duty_cycle;
-    default: uo_out <= 8'b0;
-  endcase
-end
+// always@(*) begin
+//   case(addr_out)
+//     7'd0: uo_out <= en_reg_out_7_0;
+//     7'd1: uo_out <= en_reg_out_15_8;
+//     7'd2: uo_out <= en_reg_pwm_7_0;
+//     7'd3: uo_out <= en_reg_pwm_15_8;
+//     7'd4: uo_out <= pwm_duty_cycle;
+//     default: uo_out <= 8'b0;
+//   endcase
+// end
 
-  // All output pins must be assigned. If not used, assign to 0.
-  //assign uo_out  = en_reg_out_7_0;  // Example: ou_out is the sum of ui_in and uio_in
   assign uio_out = 0;
-  assign uio_oe  = 0;
 
     // Create wires to refer to the values of the registers
   wire [7:0] en_reg_out_7_0;
@@ -51,8 +48,8 @@ end
       .en_reg_pwm_7_0(en_reg_pwm_7_0),
       .en_reg_pwm_15_8(en_reg_pwm_15_8),
       .pwm_duty_cycle(pwm_duty_cycle),
-      .out()
-      //.out({uio_out, uo_out})
+      //.out()
+      .out({uio_out, uo_out}) //[15:8] to uio, [7:0] to uo
     );
     // Add uio_in and ui_in[7:3] to the list of unused signals:
     wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};
