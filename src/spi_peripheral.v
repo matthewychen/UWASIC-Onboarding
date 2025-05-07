@@ -75,12 +75,6 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
         transaction_dat[transaction_curr_bit] = COPI_postFF;
         transaction_curr_bit = transaction_curr_bit - 1;
     end
-    else begin 
-        //if transaction processed then the current data is not needed and can await the next transaction
-        if(transaction_processed) begin
-            transaction_ready <= 1'b0;
-        end
-    end
 end
 
 reg [7:0] testreg;
@@ -89,7 +83,8 @@ always @(posedge clk or negedge rst_n) begin
     reg [6:0] addr;
     if (!rst_n) begin
         transaction_processed <= 1'b0;
-    end else if (transaction_ready && !transaction_processed) begin
+    end 
+    else if (transaction_ready && !transaction_processed) begin
         // Transaction is ready and not yet processed
         if(transaction_dat[15] == 0) begin
             //ignore read command
@@ -106,9 +101,10 @@ always @(posedge clk or negedge rst_n) begin
         end
         // Set the processed flag
         transaction_processed <= 1'b1;
-    end else if (!transaction_ready && transaction_processed) begin
+    end else if (transaction_ready && transaction_processed) begin
         // Reset processed flag when ready flag is cleared
         transaction_processed <= 1'b0;
+        transition_ready <= 0;
     end
 end
 
