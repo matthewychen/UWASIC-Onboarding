@@ -89,6 +89,7 @@ always @(posedge clk or negedge rst_n) begin
     else if (transaction_ready && !transaction_processed) begin
         // Transaction is ready and not yet processed
         if(transaction_dat[15] == 0) begin
+            addr = transaction_dat[14:8];
             //ignore read command
         end
         else begin
