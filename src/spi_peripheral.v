@@ -69,13 +69,15 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
     if (!rst_n) begin //not ready
         transaction_ready <= 1'b0;
     end
+    if (transaction_curr_bit == 4'd15)
+                transaction_ready <= 1'b1;
     else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
         transaction_dat[transaction_curr_bit] = COPI_postFF;
         transaction_curr_bit = transaction_curr_bit + 1;
     end
-    else begin 
+    else begin
         if(transaction_posedge) begin
-            transaction_ready <= 1'b1;
+            //transaction_ready <= 1'b1;
         end
         //if transaction processed then the current data is not needed and can await the next transaction
         else if(transaction_processed) begin
