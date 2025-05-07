@@ -91,6 +91,7 @@ always @(posedge SCLK_postFF or negedge rst_n) begin
     end
 end
 
+reg [7:0] testreg;
 // Update registers only after the complete transaction has finished and been validated
 always @(posedge clk or negedge rst_n) begin
    
@@ -109,7 +110,8 @@ always @(posedge clk or negedge rst_n) begin
                 //no action as address is out of range
             end
             else begin
-                SPI_regs[addr] <= transaction_dat[7:0];
+                //SPI_regs[addr] <= transaction_dat[7:0];
+                testreg <= transaction_dat[7:0];
             end
         end
         // Set the processed flag
@@ -121,7 +123,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //drive outputs on register update
-assign en_reg_out_7_0 = SPI_regs[0];
+assign en_reg_out_7_0 = testreg[7:0];
 assign en_reg_out_15_8 = SPI_regs[1];
 assign en_reg_pwm_7_0 = SPI_regs[2];
 assign en_reg_pwm_15_8 = SPI_regs[3];
