@@ -157,7 +157,7 @@ async def test_pwm_freq(dut):
     #set registers appropriately
     #measure time delay between posedges to identify freq (1% error)
     #assert
-    ##note sclk period is 5100 ns and clk is 100 ns (10 MHz)
+    #note sclk period is 5100 ns and clk is 100 ns (10 MHz)
     
     dut._log.info("Start freq test")
 
@@ -261,6 +261,140 @@ async def test_pwm_freq(dut):
 
     dut._log.info("PWM Frequency test completed successfully")
 
+async def set_pwm(dut, duty_cycle):
+    """initialize pwm by setting all registers to enable value.
+
+    Args:
+        duty_cycle (float): determine the duty cycle as a percentage.
+    """
+    assert duty_cycle <= 1 and duty_cycle >= 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0."
+    duty_on_val = int(duty_cycle * 255)  # Calculate as integer
+    
+    dut._log.info("Write transaction, address 0x00, data 0xFF - enable uo_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x01, data 0xFF - enable uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x01, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x02, data 0xFF - enable PWM on uo_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info("Write transaction, address 0x03, data 0xFF - enable PWM on uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x03, 0xFF)  # Write transaction
+    await ClockCycles(dut.clk, 1000) 
+    
+    dut._log.info(f"Write transaction, address 0x04, data {duty_cycle*100}% ({duty_on_val}/255) - enable PWM on uio_out")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, duty_on_val)  # Use integer value
+    await ClockCycles(dut.clk, 1000) 
+    
+async def test_pwm(dut, duty_cycle):
+    #start loop
+    PWM_1ago = 0
+    PWM_2ago = 0
+    cycles = 0
+    
+    assert duty_cycle <= 1 and duty_cycle >= 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0."
+    
+    if duty_cycle == 1:
+        dut._log.info("Your desired duty cycle is 1. Listening to confirm there is no posedge within 100k cycles.")
+        posedge_found = False
+        while True: 
+            await ClockCycles(dut.clk, 1)
+            PWM_2ago = PWM_1ago
+            PWM_1ago = int(dut.uo_out[0].value)
+            cycles = cycles + 1
+            
+            # Log only every 10 cycles
+            if cycles % 50 == 0:
+                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                
+            if cycles >= 100000:
+                dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
+                break
+        
+            if(PWM_1ago == 1 and PWM_2ago == 0):
+                #posedge detected
+                high_start_time = cocotb.utils.get_sim_time(units="ns")
+                dut._log.info(f"posedge detected at time {high_start_time}. pwm of 100% failed.")
+                posedge_found = True
+                break
+            
+        assert posedge_found == False, "failed"
+        
+    else:
+        dut._log.info("beginning freq listen for posedge")
+
+        while True: 
+            await ClockCycles(dut.clk, 1)
+            PWM_2ago = PWM_1ago
+            PWM_1ago = int(dut.uo_out[0].value)
+            cycles = cycles + 1
+            
+            # Log only every 10 cycles
+            if cycles % 50 == 0:
+                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                
+            if cycles >= 10000:
+                dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
+                break
+        
+            if(PWM_1ago == 1 and PWM_2ago == 0):
+                #posedge detected
+                high_start_time = cocotb.utils.get_sim_time(units="ns")
+                dut._log.info("posedge detected")
+                break
+        
+        cycles = 0
+        
+        while True: 
+            await ClockCycles(dut.clk, 1)
+            PWM_2ago = PWM_1ago
+            PWM_1ago = int(dut.uo_out[0].value)
+            cycles = cycles + 1
+            
+            # Log only every 10 cycles
+            if cycles % 50 == 0:
+                dut._log.info(f"negedge find. cycle num {cycles}")
+                
+            if cycles >= 100000:
+                dut._log.error(f"Timeout reached after {cycles} cycles - no negedge detected")
+                break
+            
+            if(PWM_1ago == 0 and PWM_2ago == 1):
+                #posedge detected
+                dut._log.info("negedge detected")
+                high_end_time = cocotb.utils.get_sim_time(units="ns")
+                break
+            
+        cycles = 0
+        
+        while True: 
+            await ClockCycles(dut.clk, 1)
+            PWM_2ago = PWM_1ago
+            PWM_1ago = int(dut.uo_out[0].value)
+            cycles = cycles + 1
+            
+            # Log only every 10 cycles
+            if cycles % 50 == 0:
+                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                
+            if cycles >= 10000:
+                dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
+                break
+        
+            if(PWM_1ago == 1 and PWM_2ago == 0):
+                #posedge detected
+                low_end_time = cocotb.utils.get_sim_time(units="ns")
+                dut._log.info("posedge detected")
+                break
+            
+        measured_duty_cycle = (high_end_time - high_start_time)/(low_end_time - high_start_time )
+            
+        assert measured_duty_cycle >= (duty_cycle*0.99) and measured_duty_cycle <= (duty_cycle*1.01), f"Duty cycle not within specified range, got {measured_duty_cycle} duty cycle when expected {duty_cycle}."
+    
 
 @cocotb.test()
 async def test_pwm_duty(dut):
@@ -268,5 +402,47 @@ async def test_pwm_duty(dut):
     #measure time delay between posedge/negedge to determine positive time
     #measure time delay between posedges to identify duty cycle (1% error)
     #assert
+    
+    dut._log.info("Start duty test")
+
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
     dut.test_mode.value = 3
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    
+    #begin write transactions
+    
+    #enable all inputs and outputs for output and PWM
+
+    duty_cycle = 0.5
+    await set_pwm(dut, duty_cycle)
+    await test_pwm(dut, duty_cycle)
+    
+    duty_cycle = 0.9
+    await set_pwm(dut, duty_cycle)
+    await test_pwm(dut, duty_cycle)
+    
+    duty_cycle = 1.0
+    await set_pwm(dut, duty_cycle)
+    await test_pwm(dut, duty_cycle)
+    
+    duty_cycle = 0 #should fail
+    await set_pwm(dut, duty_cycle)
+    await test_pwm(dut, duty_cycle)
+    
+    #all outputs set successfully
+    #start sampling
+           
     dut._log.info("PWM Duty Cycle test completed successfully")
