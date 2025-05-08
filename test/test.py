@@ -234,9 +234,7 @@ async def test_pwm_freq(dut):
     
     assert period >= (333333.33*0.99) and period <= (333333.33*1.01), f"Period not within specified range, got {period} ns."
             
-            
-    assert posedge_clk*100 >= (333333.33*1.01) and posedge_clk*100 <= (333333.33*0.99), f"Freq not within specified 300khz range, got {posedge_clk*100} period."
-            
+
     dut._log.info("PWM Frequency test completed successfully")
 
 
