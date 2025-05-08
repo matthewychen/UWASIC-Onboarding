@@ -214,7 +214,7 @@ async def test_pwm_freq(dut):
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
-        PWM_1ago = dut.uo_out[0]
+        PWM_1ago = int(dut.uo_out[0].value)
         cycles = cycles + 1
         
         # Log only every 10 cycles
@@ -239,7 +239,7 @@ async def test_pwm_freq(dut):
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
-        PWM_1ago = dut.uo_out[0]
+        PWM_1ago = int(dut.uo_out[0].value)
         cycles = cycles + 1
         
         # Log only every 10 cycles
