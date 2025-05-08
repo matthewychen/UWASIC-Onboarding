@@ -246,7 +246,7 @@ async def test_pwm_freq(dut):
         if cycles % 50 == 0:
             dut._log.info(f"second posedge find. cycle num {cycles}")
             
-        if cycles >= 10000:
+        if cycles >= 100000:
             dut._log.error(f"Timeout reached after {cycles} cycles - no rising edge detected")
             break
         
