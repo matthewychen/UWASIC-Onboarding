@@ -219,8 +219,12 @@ async def test_pwm_freq(dut):
         
         # Log only every 10 cycles
         if cycles % 50 == 0:
-            dut._log.info(f"first posedge find. cycle num {cycles}")
+            dut._log.info(f"current cycle number: {cycles}")
             
+        if cycles >= 10000:
+            dut._log.error(f"Timeout reached after {cycles} cycles - no rising edge detected")
+            break
+    
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             start_time = cocotb.utils.get_sim_time(units="ns")
@@ -242,6 +246,10 @@ async def test_pwm_freq(dut):
         if cycles % 50 == 0:
             dut._log.info(f"second posedge find. cycle num {cycles}")
             
+        if cycles >= 10000:
+            dut._log.error(f"Timeout reached after {cycles} cycles - no rising edge detected")
+            break
+        
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             period = cocotb.utils.get_sim_time(units="ns") - start_time
