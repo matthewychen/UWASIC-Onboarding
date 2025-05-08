@@ -36,7 +36,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
   
   always@(*) begin
     case(test_mode) 
-      2'b1: begin
+      2'd1: begin
         case(addr_out)
           0: uo_out <= en_reg_out_7_0;
           1: uo_out <= en_reg_out_15_8;
@@ -46,8 +46,8 @@ module tt_um_uwasic_onboarding_matthew_chen(
           default: uo_out <= 8'b0;
         endcase
       end
-      2'b2: uo_out <= pwm_uo_out;
-      2'b3: uo_out <= pwm_uo_out;
+      2'd2: uo_out <= pwm_uo_out;
+      2'd3: uo_out <= pwm_uo_out;
       default: uo_out <= 8'b0;
     endcase
   end
