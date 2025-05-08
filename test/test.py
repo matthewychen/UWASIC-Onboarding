@@ -157,7 +157,7 @@ async def test_pwm_freq(dut):
     #assert
     ##note sclk period is 5100 ns and clk is 100 ns (10 MHz)
     
-    dut._log.info("Start PWM test")
+    dut._log.info("Start freq test")
 
     # Set the clock period to 100 ns (10 MHz)
     clock = Clock(dut.clk, 100, units="ns")
@@ -207,26 +207,31 @@ async def test_pwm_freq(dut):
     #start loop
     PWM_1ago = 0
     PWM_2ago = 0
+    cycles = 0
     
-    
+    dut._log.info("beginning freq listen")
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
         PWM_1ago = dut.uo_out[0]
-        
+        cycles = cycles + 1
+        dut._log.info("first posedge find. cycle num {cycles}")
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             start_time = cocotb.utils.get_sim_time(units="ns")
+            dut._log.info("posedge detected")
             break
     
     PWM_1ago = 0
     PWM_2ago = 0
+    cycles = 0
     
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
         PWM_1ago = dut.uo_out[0]
-        
+        cycles = cycles + 1
+        dut._log.info("second posedge find. cycle num {cycles}")
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             period = cocotb.utils.get_sim_time(units="ns") - start_time
