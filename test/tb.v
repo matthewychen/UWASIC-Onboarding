@@ -22,7 +22,7 @@ module tb ();
   wire [7:0] uo_out;
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
-  wire test_mode;
+  wire [1:0] test_mode;
 `ifdef GL_TEST
   wire VPWR = 1'b1;
   wire VGND = 1'b0;

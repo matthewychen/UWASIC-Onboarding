@@ -15,7 +15,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
     input  wire       rst_n,    // reset_n - low to reset
-    input  wire       test_mode //debugger
+    input  wire [1:0] test_mode //debugger
 );
 
   assign uio_oe = 8'hFF;
@@ -36,7 +36,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
   
   always@(*) begin
     case(test_mode) 
-      1: begin
+      2'b1: begin
         case(addr_out)
           0: uo_out <= en_reg_out_7_0;
           1: uo_out <= en_reg_out_15_8;
@@ -46,8 +46,8 @@ module tt_um_uwasic_onboarding_matthew_chen(
           default: uo_out <= 8'b0;
         endcase
       end
-      2: uo_out <= pwm_uo_out;
-      3: uo_out <= pwm_uo_out;
+      2'b2: uo_out <= pwm_uo_out;
+      2'b3: uo_out <= pwm_uo_out;
       default: uo_out <= 8'b0;
     endcase
   end
