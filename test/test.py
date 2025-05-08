@@ -122,7 +122,8 @@ async def test_spi(dut):
 
     dut._log.info("Read transaction (invalid), address 0x30, data 0xBE")
     ui_in_val = await send_spi_transaction(dut, 0, 0x30, 0xBE)
-    assert dut.uo_out.value == 0xF0, f"Expected 0xF0, got {dut.uo_out.value}"
+    assert dut.uo_out.value == 0x00, f"Expected 0xF0, got {dut.uo_out.value}"
+    #if invalid, expect to read 0.
     await ClockCycles(dut.clk, 100)
     
     dut._log.info("Read transaction (invalid), address 0x41 (invalid), data 0xEF")
