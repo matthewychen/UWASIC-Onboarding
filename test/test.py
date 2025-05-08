@@ -216,6 +216,8 @@ async def test_pwm_freq(dut):
         PWM_1ago = dut.uo_out[0]
         cycles = cycles + 1
         dut._log.info("first posedge find. cycle num {cycles}")
+        if cycles == 4000:
+            pass
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             start_time = cocotb.utils.get_sim_time(units="ns")
