@@ -269,6 +269,7 @@ async def set_pwm(dut, duty_cycle):
     """
     assert duty_cycle <= 1 and duty_cycle >= 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0."
     duty_on_val = int(duty_cycle * 255)  # Calculate as integer
+    dut._log.info(f"I I WILL WRITE {duty_on_val} TO REGISTER 4!!!!!!!!!!")
     
     dut._log.info("Write transaction, address 0x00, data 0xFF - enable uo_out")
     ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
@@ -335,7 +336,7 @@ async def test_pwm(dut, duty_cycle):
             
             # Log only every 10 cycles
             if cycles % 50 == 0:
-                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                dut._log.info(f"second posedge find. current cycle number: {cycles}")
                 
             if cycles >= 10000:
                 dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
