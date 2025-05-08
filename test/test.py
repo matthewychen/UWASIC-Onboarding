@@ -231,8 +231,6 @@ async def test_pwm_freq(dut):
             dut._log.info("posedge detected")
             break
     
-    PWM_1ago = 0
-    PWM_2ago = 0
     cycles = 0
     
     # Second while loop 
