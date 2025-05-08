@@ -210,14 +210,17 @@ async def test_pwm_freq(dut):
     cycles = 0
     
     dut._log.info("beginning freq listen")
+    # First while loop
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
         PWM_1ago = dut.uo_out[0]
         cycles = cycles + 1
-        dut._log.info("first posedge find. cycle num", cycles)
-        if cycles == 4:
-            pass
+        
+        # Log only every 10 cycles
+        if cycles % 50 == 0:
+            dut._log.info(f"first posedge find. cycle num {cycles}")
+            
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             start_time = cocotb.utils.get_sim_time(units="ns")
@@ -228,12 +231,17 @@ async def test_pwm_freq(dut):
     PWM_2ago = 0
     cycles = 0
     
+    # Second while loop 
     while True: 
         await ClockCycles(dut.clk, 1)
         PWM_2ago = PWM_1ago
         PWM_1ago = dut.uo_out[0]
         cycles = cycles + 1
-        dut._log.info("second posedge find. cycle num {cycles}")
+        
+        # Log only every 10 cycles
+        if cycles % 50 == 0:
+            dut._log.info(f"second posedge find. cycle num {cycles}")
+            
         if(PWM_1ago == 1 and PWM_2ago == 0):
             #posedge detected
             period = cocotb.utils.get_sim_time(units="ns") - start_time
