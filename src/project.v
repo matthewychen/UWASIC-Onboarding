@@ -14,7 +14,8 @@ module tt_um_uwasic_onboarding_matthew_chen(
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+    input  wire       rst_n,    // reset_n - low to reset
+    input  wire       test_mode //debugger
 );
 
   assign uio_oe = 8'hFF;
@@ -30,7 +31,26 @@ module tt_um_uwasic_onboarding_matthew_chen(
 //   endcase
 // end
 
-  assign uio_out = 0;
+  wire [7:0] pwm_uo_out;
+  wire [7:0] spi_uo_out;
+  
+  always@(*) begin
+    case(test_mode) 
+      1: begin
+        case(addr_out)
+          0: uo_out <= en_reg_out_7_0;
+          1: uo_out <= en_reg_out_15_8;
+          2: uo_out <= en_reg_pwm_7_0;
+          3: uo_out <= en_reg_pwm_15_8;
+          4: uo_out <= pwm_duty_cycle;
+          default: uo_out <= 8'b0;
+        endcase
+      end
+      2: uo_out <= pwm_uo_out;
+      3: uo_out <= pwm_uo_out;
+      default: uo_out <= 8'b0;
+    endcase
+  end
 
     // Create wires to refer to the values of the registers
   wire [7:0] en_reg_out_7_0;
@@ -49,7 +69,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
       .en_reg_pwm_15_8(en_reg_pwm_15_8),
       .pwm_duty_cycle(pwm_duty_cycle),
       //.out()
-      .out({uio_out, uo_out}) //[15:8] to uio, [7:0] to uo
+      .out({uio_out, pwm_uo_out}) //[15:8] to uio, [7:0] to uo
     );
     // Add uio_in and ui_in[7:3] to the list of unused signals:
     wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};

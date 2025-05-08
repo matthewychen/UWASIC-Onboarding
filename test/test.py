@@ -98,6 +98,7 @@ async def test_spi(dut):
     ncs = 1
     bit = 0
     sclk = 0
+    dut.test_mode.value = 1;
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 5)
@@ -169,6 +170,7 @@ async def test_pwm_freq(dut):
     ncs = 1
     bit = 0
     sclk = 0
+    dut.test_mode.value = 2;
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 5)
@@ -265,4 +267,5 @@ async def test_pwm_duty(dut):
     #measure time delay between posedge/negedge to determine positive time
     #measure time delay between posedges to identify duty cycle (1% error)
     #assert
+    dut.test_mode.value = 3;
     dut._log.info("PWM Duty Cycle test completed successfully")
