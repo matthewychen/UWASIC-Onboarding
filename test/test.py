@@ -258,7 +258,6 @@ async def test_pwm_freq(dut):
     
     assert period >= (333333.33*0.99) and period <= (333333.33*1.01), f"Period not within specified range, got {period} ns."
             
-
     dut._log.info("PWM Frequency test completed successfully")
 
 async def set_pwm(dut, duty_cycle):
@@ -293,8 +292,8 @@ async def set_pwm(dut, duty_cycle):
     
 async def test_pwm(dut, duty_cycle):
     #start loop
-    PWM_1ago = 0
-    PWM_2ago = 0
+    PWM_1ago = int(dut.uo_out[0].value)
+    PWM_2ago = int(dut.uo_out[0].value)
     cycles = 0
     
     assert duty_cycle <= 1 and duty_cycle >= 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0."
