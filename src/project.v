@@ -32,23 +32,22 @@ module tt_um_uwasic_onboarding_matthew_chen(
 // end
 
   wire [7:0] pwm_uo_out;
-  wire [7:0] spi_uo_out;
   
   always@(*) begin
     case(ui_in[4:3]) 
       2'd1: begin
         case(addr_out)
-          0: uo_out <= en_reg_out_7_0;
-          1: uo_out <= en_reg_out_15_8;
-          2: uo_out <= en_reg_pwm_7_0;
-          3: uo_out <= en_reg_pwm_15_8;
-          4: uo_out <= pwm_duty_cycle;
-          default: uo_out <= 8'b0;
+          0: uo_out = en_reg_out_7_0;
+          1: uo_out = en_reg_out_15_8;
+          2: uo_out = en_reg_pwm_7_0;
+          3: uo_out = en_reg_pwm_15_8;
+          4: uo_out = pwm_duty_cycle;
+          default: uo_out = 8'b0;
         endcase
       end
-      2'd2: uo_out <= pwm_uo_out;
-      2'd3: uo_out <= pwm_uo_out;
-      default: uo_out <= 8'b0;
+      2'd2: uo_out = pwm_uo_out;
+      2'd3: uo_out = pwm_uo_out;
+      default: uo_out = 8'b0;
     endcase
   end
 
