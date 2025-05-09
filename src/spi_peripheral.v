@@ -88,6 +88,10 @@ always @(posedge clk or negedge rst_n) begin
         if(transaction_dat[15] == 0) begin
             addr <= transaction_dat[10:8];
             //ignore read command
+            if(transaction_dat[14:8] > MAX_ADDR) begin
+                //no valid data as address is out of range
+                addr <= 111; //invalid address
+            end
         end
         else begin
             addr = transaction_dat[10:8];
