@@ -30,9 +30,6 @@ reg nCS_postFF;
 
 reg [2:0] addr;
 
-reg nCS_postFF_edge1;
-reg nCS_postFF_edge2;
-
 reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to MAX_ADDR
 reg [15:0] transaction_dat;
 reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
@@ -64,29 +61,20 @@ always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
     nCS_postFF <= nCS_FF2out;
 end
 
-// always@(negedge nCS_postFF) begin
-//     transaction_curr_bit <= 4'd15; //start writing from MSB.
-//     transaction_dat <= 16'bx; //reset to neutral state
-// end
+always@(negedge nCS_postFF) begin
+    transaction_curr_bit <= 4'd15; //start writing from MSB.
+    transaction_dat <= 16'bx; //reset to neutral state
+end
 
 always@(posedge nCS_postFF) begin
     transaction_ready <= 1'b1;
 end
 
-always @(posedge clk or negedge rst_n) begin
-//always @(posedge SCLK_postFF) begin
-    if (!rst_n) begin
-        transaction_processed <= 1'b0;
-        nCS_postFF_edge1 = 0;
-        nCS_postFF_edge2 = 0;
-    end 
-    else begin
-        nCS_postFF_edge1 = SCLK_postFF;
-        nCS_postFF_edge2 = nCS_postFF_edge1;
-        if (nCS_postFF_edge1 == 1'b0 && nCS_postFF_edge2 == 1'b1) begin //negedge detected. transaction start. write to transaction one by one
-            transaction_dat[transaction_curr_bit] <= COPI_postFF;
-            transaction_curr_bit <= transaction_curr_bit - 1;
-        end
+
+always @(posedge SCLK_postFF) begin
+    else if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
+        transaction_dat[transaction_curr_bit] <= COPI_postFF;
+        transaction_curr_bit <= transaction_curr_bit - 1;
     end
 end
 
@@ -115,9 +103,8 @@ always @(posedge clk or negedge rst_n) begin
     end else if (transaction_ready && transaction_processed) begin
         // Reset processed flag when ready flag is cleared
         transaction_processed <= 1'b0;
-        transaction_ready <= 1'b0;
-        transaction_curr_bit <= 4'd15;
-        transaction_dat <= 16'bx;
+        transaction_ready <= 0;
+        
     end
 end
 
