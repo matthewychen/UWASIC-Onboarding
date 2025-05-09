@@ -15,7 +15,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
     input  wire       rst_n,    // reset_n - low to reset
-    input  wire [1:0] test_mode //debugger
+    //input  wire [1:0] test_mode // debugger. unsupported by make. moved to ui_in[4:3]
 );
 
   assign uio_oe = 8'hFF;
@@ -35,7 +35,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
   wire [7:0] spi_uo_out;
   
   always@(*) begin
-    case(test_mode) 
+    case(ui_in[4:3]) 
       2'd1: begin
         case(addr_out)
           0: uo_out <= en_reg_out_7_0;
@@ -71,8 +71,8 @@ module tt_um_uwasic_onboarding_matthew_chen(
       //.out()
       .out({uio_out, pwm_uo_out}) //[15:8] to uio, [7:0] to uo
     );
-    // Add uio_in and ui_in[7:3] to the list of unused signals:
-    wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};
+    // Add uio_in and ui_in[7:5] to the list of unused signals:
+    wire _unused = &{ena, ui_in[7:5], uio_in, 1'b0};
 
    spi_peripheral spi_peripheral_inst (
       .SCLK(ui_in[0]),
