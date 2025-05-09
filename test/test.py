@@ -288,7 +288,7 @@ async def set_pwm(dut, duty_cycle):
     
     dut._log.info(f"Write transaction, address 0x04, data {duty_cycle*100}% ({duty_on_val}/255) - enable PWM on uio_out")
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, duty_on_val)  # Use integer value
-    await ClockCycles(dut.clk, 10000) 
+    await ClockCycles(dut.clk, 1000) 
     
 async def test_pwm(dut, duty_cycle):
     #start loop
