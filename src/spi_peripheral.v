@@ -114,6 +114,6 @@ assign en_reg_out_15_8 = SPI_regs[1];
 assign en_reg_pwm_7_0 = SPI_regs[2];
 assign en_reg_pwm_15_8 = SPI_regs[3];
 assign pwm_duty_cycle = SPI_regs[4];
-assign addr_out[6:0] = addr[6:0];
+assign addr_out[2:0] = addr[2:0];
 
 endmodule
