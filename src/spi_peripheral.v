@@ -94,7 +94,7 @@ always @(posedge clk or negedge rst_n) begin
             end
         end
         else begin
-            addr = transaction_dat[10:8];
+            addr <= transaction_dat[10:8];
             if(transaction_dat[14:8] > MAX_ADDR) begin
                 //no valid data as address is out of range
                 addr <= 111; //invalid address
