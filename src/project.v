@@ -33,7 +33,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
 
   wire [7:0] pwm_uo_out;
   
-  always@(*) begin
+  always@(posedge clk) begin
     case(ui_in[4:3]) 
       2'd1: begin
         case(addr_out)
