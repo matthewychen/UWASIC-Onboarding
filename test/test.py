@@ -296,7 +296,7 @@ async def test_pwm(dut, duty_cycle):
     PWM_2ago = int(dut.uo_out[0].value)
     cycles = 0
     
-    assert duty_cycle <= 1 and duty_cycle >= 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0."
+    assert duty_cycle <= 1 and duty_cycle > 0, f"Your duty cycle percentage, {duty_cycle} exceeds 100% or is less than or equal to 0%."
     
     if duty_cycle == 1:
         dut._log.info("Your desired duty cycle is 1. Listening to confirm there is no posedge within 100k cycles.")
