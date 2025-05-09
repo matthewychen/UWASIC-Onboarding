@@ -14,7 +14,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
-    input  wire       rst_n,    // reset_n - low to reset
+    input  wire       rst_n    // reset_n - low to reset
     //input  wire [1:0] test_mode // debugger. unsupported by make. moved to ui_in[4:3]
 );
 
