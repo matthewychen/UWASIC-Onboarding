@@ -21,8 +21,14 @@ async def await_half_sclk(dut):
 
 def ui_in_logicarray(ncs, bit, sclk, test_mode=00):
     """Setup the ui_in value as a LogicArray."""
-    
-    return LogicArray(f"000{test_mode}{ncs}{bit}{sclk}")
+    if(test_mode == 1):
+        return LogicArray(f"00001{ncs}{bit}{sclk}")
+    if(test_mode == 2): 
+        return LogicArray(f"00010{ncs}{bit}{sclk}")
+    if(test_mode == 3): 
+        return LogicArray(f"00011{ncs}{bit}{sclk}")
+    else:
+        return LogicArray(f"00000{ncs}{bit}{sclk}")
 
 async def send_spi_transaction(dut, r_w, address, data, test_mode=00):
     """
