@@ -57,7 +57,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
   wire [7:0] en_reg_pwm_7_0;
   wire [7:0] en_reg_pwm_15_8;
   wire [7:0] pwm_duty_cycle;
-  reg [6:0] addr_out;
+  reg [2:0] addr_out;
 
   pwm_peripheral pwm_peripheral_inst (
       .clk(clk),
