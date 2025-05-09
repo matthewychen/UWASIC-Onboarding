@@ -13,7 +13,7 @@ module spi_peripheral #(
     output wire [7:0] en_reg_pwm_7_0,
     output wire [7:0] en_reg_pwm_15_8,
     output wire [7:0] pwm_duty_cycle,
-    output wire [6:0] addr_out
+    output wire [2:0] addr_out
 );
 
 reg SCLK_FF1out;
@@ -92,7 +92,8 @@ always @(posedge clk or negedge rst_n) begin
         else begin
             addr = transaction_dat[10:8];
             if(transaction_dat[10:8] > MAX_ADDR) begin
-                //no action as address is out of range
+                //no valid data as address is out of range
+                addr <= 111; //invalid address
             end
             else begin
                 SPI_regs[addr] <= transaction_dat[7:0];
