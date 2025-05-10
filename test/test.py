@@ -228,7 +228,7 @@ async def test_pwm_freq(dut):
         cycles = cycles + 1
         
         # Log only every 10 cycles
-        if cycles % 50 == 0:
+        if cycles % 250 == 0:
             dut._log.info(f"current cycle number: {cycles}")
             
         if cycles >= 10000:
@@ -251,7 +251,7 @@ async def test_pwm_freq(dut):
         cycles = cycles + 1
         
         # Log only every 10 cycles
-        if cycles % 50 == 0:
+        if cycles % 250 == 0:
             dut._log.info(f"second posedge find. cycle num {cycles}")
             
         if cycles >= 100000:
@@ -319,7 +319,7 @@ async def test_pwm(dut, duty_cycle):
             cycles = cycles + 1
             
             # Log only every 10 cycles
-            if cycles % 50 == 0:
+            if cycles % 250 == 0:
                 dut._log.info(f"first posedge find. current cycle number: {cycles}.  PWM2ago: {PWM_2ago}, PWM1ago: {PWM_1ago}")
                 
             if cycles >= 100000:
@@ -389,7 +389,7 @@ async def test_pwm(dut, duty_cycle):
             cycles = cycles + 1
             
             # Log only every 10 cycles
-            if cycles % 50 == 0:
+            if cycles % 250 == 0:
                 dut._log.info(f"second posedge find. current cycle number: {cycles}")
                 
             if cycles >= 10000:
