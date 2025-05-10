@@ -320,7 +320,7 @@ async def test_pwm(dut, duty_cycle):
             
             # Log only every 10 cycles
             if cycles % 50 == 0:
-                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                dut._log.info(f"first posedge find. current cycle number: {cycles}.  PWM2ago: {PWM_2ago}, PWM1ago: {PWM_1ago}")
                 
             if cycles >= 100000:
                 dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
@@ -345,11 +345,11 @@ async def test_pwm(dut, duty_cycle):
             cycles = cycles + 1
             
             # Log only every 10 cycles
-            if cycles % 50 == 0:
-                dut._log.info(f"second posedge find. current cycle number: {cycles}")
+            if cycles % 250 == 0:
+                dut._log.info(f"first posedge find. current cycle number: {cycles}.  PWM2ago: {PWM_2ago}, PWM1ago: {PWM_1ago}")
                 
             if cycles >= 10000:
-                dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
+                dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected.")
                 break
         
             if(PWM_1ago == 1 and PWM_2ago == 0):
@@ -390,7 +390,7 @@ async def test_pwm(dut, duty_cycle):
             
             # Log only every 10 cycles
             if cycles % 50 == 0:
-                dut._log.info(f"first posedge find. current cycle number: {cycles}")
+                dut._log.info(f"second posedge find. current cycle number: {cycles}")
                 
             if cycles >= 10000:
                 dut._log.error(f"Timeout reached after {cycles} cycles - no posedge detected")
