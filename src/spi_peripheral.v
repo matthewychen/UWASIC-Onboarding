@@ -80,7 +80,7 @@ always @(posedge clk or negedge rst_n) begin
         // Detect falling edge of nCS (transaction start)
         if (nCS_postFF == 1'b0 && nCS_postFF_prev == 1'b1) begin
             transaction_curr_bit <= 4'd15;
-            transaction_dat <= 16'bx;
+            transaction_dat <= 16'b0;
         end
         
         // Detect rising edge of nCS (transaction end)
