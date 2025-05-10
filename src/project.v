@@ -47,7 +47,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
       end
       2'd2: uo_out = pwm_uo_out;
       2'd3: uo_out = pwm_uo_out;
-      default: uo_out = 8'b0;
+      default: uo_out = pwm_uo_out;
     endcase
   end
 
