@@ -136,7 +136,6 @@ always @(posedge clk or negedge rst_n) begin
         transaction_processed <= 1'b1;
     end else if (transaction_ready && transaction_processed) begin
         // Reset processed flag when ready flag is cleared
-        transaction_processed <= 1'b0;
         transaction_ready <= 0;
         
     end
