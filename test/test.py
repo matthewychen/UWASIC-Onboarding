@@ -181,7 +181,8 @@ async def test_pwm_freq(dut):
     sclk = 0
     test_mode = 2
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk, test_mode)
-    dut.rst_n.value = 0
+    # wil not resetting work?
+    dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
@@ -429,7 +430,7 @@ async def test_pwm_duty(dut):
     sclk = 0
     test_mode = 3
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk, test_mode)
-    dut.rst_n.value = 0
+    dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
