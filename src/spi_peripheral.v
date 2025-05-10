@@ -71,6 +71,9 @@ always @(posedge clk or negedge rst_n) begin
         transaction_ready <= 1'b0;
         nCS_postFF_prev <= 1'b1;     // Default inactive
         SCLK_postFF_prev <= 1'b0;
+        for (integer i = 0; i <= MAX_ADDR; i = i + 1) begin
+            SPI_regs[i] <= 8'h00;
+        end
     end
     else begin
         // Store previous values for edge detection

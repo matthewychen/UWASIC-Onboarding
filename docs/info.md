@@ -9,12 +9,12 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Placeholder text
+The SPI module will sync inputs across clock domains and save them into registers. These registers will be used to control the PWM strength/duty cycle/frequency. The output changes based on the inputted test code; by default, it will be the PWM output.
 
 ## How to test
 
-Placeholder text
+See included test.py.
 
 ## External hardware
 
-Placeholder text
+N/A.
