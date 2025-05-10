@@ -367,7 +367,7 @@ async def test_pwm(dut, duty_cycle):
             cycles = cycles + 1
             
             # Log only every 10 cycles
-            if cycles % 50 == 0:
+            if cycles % 250 == 0:
                 dut._log.info(f"negedge find. cycle num {cycles}")
                 
             if cycles >= 100000:

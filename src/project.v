@@ -8,7 +8,7 @@
 module tt_um_uwasic_onboarding_matthew_chen(
 
     input  wire [7:0] ui_in,    // Dedicated inputs
-    output reg [7:0] uo_out,   // Dedicated outputs
+    output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
@@ -33,23 +33,16 @@ module tt_um_uwasic_onboarding_matthew_chen(
 
   wire [7:0] pwm_uo_out;
   
-  always@(ui_in[4:3] or addr_out) begin
-    case(ui_in[4:3]) 
-      2'd1: begin
-        case(addr_out)
-          0: uo_out = en_reg_out_7_0;
-          1: uo_out = en_reg_out_15_8;
-          2: uo_out = en_reg_pwm_7_0;
-          3: uo_out = en_reg_pwm_15_8;
-          4: uo_out = pwm_duty_cycle;
-          default: uo_out <= 8'b0;
-        endcase
-      end
-      2'd2: uo_out = pwm_uo_out;
-      2'd3: uo_out = pwm_uo_out;
-      default: uo_out = pwm_uo_out;
-    endcase
-  end
+  assign uo_out = (ui_in[4:3] == 2'd1) ? 
+                  // Inner case for addr_out when ui_in[4:3] == 1
+                  ((addr_out == 0) ? en_reg_out_7_0 :
+                   (addr_out == 1) ? en_reg_out_15_8 :
+                   (addr_out == 2) ? en_reg_pwm_7_0 :
+                   (addr_out == 3) ? en_reg_pwm_15_8 :
+                   (addr_out == 4) ? pwm_duty_cycle :
+                   8'b0) :
+                // Remaining cases (2, 3, default) all map to pwm_uo_out
+                pwm_uo_out;
 
     // Create wires to refer to the values of the registers
   wire [7:0] en_reg_out_7_0;
