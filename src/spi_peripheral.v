@@ -61,20 +61,45 @@ always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
     nCS_postFF <= nCS_FF2out;
 end
 
-always@(negedge nCS_postFF) begin
-    transaction_curr_bit <= 4'd15; //start writing from MSB.
-    transaction_dat <= 16'bx; //reset to neutral state
-end
+reg nCS_postFF_prev;     // For edge detection
+reg SCLK_postFF_prev;    // For edge detection
 
-always@(posedge nCS_postFF) begin
-    transaction_ready <= 1'b1;
-end
-
-
-always @(posedge SCLK_postFF) begin
-    if (nCS_postFF == 1'b0) begin //transaction start. write to transaction one by one
-        transaction_dat[transaction_curr_bit] <= COPI_postFF;
-        transaction_curr_bit <= transaction_curr_bit - 1;
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        transaction_curr_bit <= 4'd0;
+        transaction_dat <= 16'b0;
+        transaction_ready <= 1'b0;
+        nCS_postFF_prev <= 1'b1;     // Default inactive
+        SCLK_postFF_prev <= 1'b0;
+    end
+    else begin
+        // Store previous values for edge detection
+        nCS_postFF_prev <= nCS_postFF;
+        SCLK_postFF_prev <= SCLK_postFF;
+        
+        // Detect falling edge of nCS (transaction start)
+        if (nCS_postFF == 1'b0 && nCS_postFF_prev == 1'b1) begin
+            transaction_curr_bit <= 4'd15;
+            transaction_dat <= 16'bx;
+        end
+        
+        // Detect rising edge of nCS (transaction end)
+        if (nCS_postFF == 1'b1 && nCS_postFF_prev == 1'b0) begin
+            transaction_ready <= 1'b1;
+        end
+        
+        // Detect rising edge of SCLK and sample data
+        if (SCLK_postFF == 1'b1 && SCLK_postFF_prev == 1'b0) begin
+            if (nCS_postFF == 1'b0) begin
+                transaction_dat[transaction_curr_bit] <= COPI_postFF;
+                transaction_curr_bit <= transaction_curr_bit - 1;
+            end
+        end
+        
+        // Handle processed flag clearing in the same block
+        if (transaction_ready && transaction_processed) begin
+            transaction_ready <= 1'b0;
+        end
     end
 end
 
@@ -90,14 +115,14 @@ always @(posedge clk or negedge rst_n) begin
             //ignore read command
             if(transaction_dat[14:8] > MAX_ADDR) begin
                 //no valid data as address is out of range
-                addr <= 111; //invalid address
+                addr <= 3'b111; //invalid address
             end
         end
         else begin
             addr <= transaction_dat[10:8];
             if(transaction_dat[14:8] > MAX_ADDR) begin
                 //no valid data as address is out of range
-                addr <= 111; //invalid address
+                addr <= 3'b111; //invalid address
             end
             else begin
                 SPI_regs[addr] <= transaction_dat[7:0];
