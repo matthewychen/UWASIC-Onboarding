@@ -86,21 +86,22 @@ always @(posedge clk or negedge rst_n) begin
     else if (transaction_ready && !transaction_processed) begin
         // Transaction is ready and not yet processed
         if(transaction_dat[15] == 0) begin //read block
-            addr <= transaction_dat[10:8];
+            
             //ignore read command
             if(transaction_dat[14:8] > MAX_ADDR) begin
                 //no valid data as address is out of range
                 addr <= 3'b111; //invalid address
             end
+            else addr <= transaction_dat[10:8];
         end
         else begin //write block
-            addr <= transaction_dat[10:8];
             if(transaction_dat[14:8] > MAX_ADDR) begin
                 //no valid data as address is out of range
                 addr <= 3'b111; //invalid address
             end
             else begin
-                SPI_regs[addr] <= transaction_dat[7:0];
+                addr <= transaction_dat[10:8];
+                SPI_regs[transaction_dat[10:8]] <= transaction_dat[7:0];
             end
         end
         // Set the processed flag
