@@ -38,6 +38,11 @@ reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
 reg transaction_ready; //nCS deasserted
 reg transaction_processed; //correct data already written to registers, can discard current transaction
 
+initial begin
+        for (integer i = 0; i <= MAX_ADDR; i = i + 1) begin
+            SPI_regs[i] <= 8'hFF;
+        end
+end
 //DFF syncs
 always@(posedge clk) begin //SCLK FF sync and edge detection
     //double ff sync the lower freq sig to the higher freq sig
