@@ -1,155 +1,80 @@
-module spi_peripheral #(
-    parameter MAX_ADDR = 4
-)
-(
-    input wire       SCLK,// clock
-    input wire       COPI,//in from controller
-    input wire       nCS,//start transaction on negedge
-    input wire       clk,//
-    input wire       rst_n,// 
+`default_nettype none
 
-    output wire [7:0] en_reg_out_7_0,
-    output wire [7:0] en_reg_out_15_8, 
-    output wire [7:0] en_reg_pwm_7_0,
-    output wire [7:0] en_reg_pwm_15_8,
-    output wire [7:0] pwm_duty_cycle,
-    output wire [2:0] addr_out
+module spi_peripheral #(parameter SYNC = 2)(
+    //SPI inputs
+    input wire nCS, 
+    input wire SCLK, 
+    input wire COPI,
+
+    //sysclk input
+    input wire clk,
+    input wire rst_n,        //active LOW
+
+    //outputs
+    output reg [7:0] en_reg_out_7_0,
+    output reg [7:0] en_reg_out_15_8,
+    output reg [7:0] en_reg_pwm_7_0,
+    output reg [7:0] en_reg_pwm_15_8,
+    output reg [7:0] pwm_duty_cycle
 );
 
-reg SCLK_FF1out;
-reg SCLK_FF2out;
-reg SCLK_postFF;
+//internal regs
+reg [4:0] sCLKcnt;
+reg [15:0] data;
 
-reg COPI_FF1out;
-reg COPI_FF2out;
-reg COPI_postFF;
+reg [SYNC-1:0] sync_nCS;
+reg [SYNC-1:0] sync_SCLK; 
+reg [SYNC-1:0] sync_COPI;
 
-reg nCS_FF1out;
-reg nCS_FF2out;
-reg nCS_postFF;
+//SPI DATA [15:0] IS [DATA 8 bit][ADDR 7 bit][R/W]
+//note the ADDR is by default 0x00-0x04
 
-reg [2:0] addr;
-
-reg [7:0] SPI_regs [0:MAX_ADDR]; // Array of 8-bit registers indexed from 0 to MAX_ADDR
-reg [15:0] transaction_dat;
-reg [3:0] transaction_curr_bit; //from the serial in: what is the current bit?
-
-//Flags
-reg transaction_ready; //nCS deasserted
-reg transaction_processed; //correct data already written to registers, can discard current transaction
-
-initial begin
-        for (integer i = 0; i <= MAX_ADDR; i = i + 1) begin
-            SPI_regs[i] <= 8'hFF;
-        end
-end
-//DFF syncs
-always@(posedge clk) begin //SCLK FF sync and edge detection
-    //double ff sync the lower freq sig to the higher freq sig
-    SCLK_FF1out <= SCLK;
-    SCLK_FF2out <= SCLK_FF1out;
-    if(SCLK_FF2out == 1 && SCLK_FF1out == 0) begin //posedge det
-        SCLK_postFF <= 1;
-    end
-    else if(SCLK_FF2out == 0 && SCLK_FF1out == 1) begin //negedge det
-        SCLK_postFF <= 0;
-    end
-end
-
-always@(posedge clk) begin //COPI/nCS sync with simple doubleflop
-    COPI_FF1out <= COPI;
-    COPI_FF2out <= COPI_FF1out; //one more clk delay for accurate data capture and avoid race condition
-    COPI_postFF <= COPI_FF2out;
-
-    nCS_FF1out <= nCS;
-    nCS_FF2out <= nCS_FF1out;
-    nCS_postFF <= nCS_FF2out;
-end
-
-reg nCS_postFF_prev;     // For edge detection
-reg SCLK_postFF_prev;    // For edge detection
-
+//take in SPI data, 
 always @(posedge clk or negedge rst_n) begin
+
     if (!rst_n) begin
-        transaction_curr_bit <= 4'd0;
-        transaction_dat <= 16'b0;
-        transaction_ready <= 1'b0;
-        nCS_postFF_prev <= 1'b1;     // Default inactive
-        SCLK_postFF_prev <= 1'b0;
-    end
-    else begin
-        // Store previous values for edge detection
-        nCS_postFF_prev <= nCS_postFF;
-        SCLK_postFF_prev <= SCLK_postFF;
+        sCLKcnt <= 5'b0;
+        data <= 16'b0;
+
+        sync_nCS <= {SYNC{1'b0}};
+        sync_SCLK <= {SYNC{1'b0}};
+        sync_COPI <= {SYNC{1'b0}};
+
+        en_reg_out_7_0 <= 8'b0;
+        en_reg_out_15_8 <= 8'b0;
+        en_reg_pwm_7_0 <= 8'b0;
+        en_reg_pwm_15_8 <= 8'b0;
+        pwm_duty_cycle <= 8'b0;
+    end else begin
         
-        // Detect falling edge of nCS (transaction start)
-        if (nCS_postFF == 1'b0 && nCS_postFF_prev == 1'b1) begin
-            transaction_curr_bit <= 4'd15;
-            transaction_dat <= 16'b0;
+        sync_nCS <= {sync_nCS[SYNC-2:0], nCS};            //2'b10 is negedge
+        sync_SCLK <= {sync_SCLK[SYNC-2:0], SCLK};         //note, 2'b00 is lo, 2'b01 is posedge, 2'b11 is high, 2'b10 is negedge
+        sync_COPI <= {sync_COPI[SYNC-2:0], COPI};
+
+        if (sync_nCS == 2'b10) begin
+            sCLKcnt <= 5'b0;
+            data <= 16'b0;
+
         end
-        
-        // Detect rising edge of nCS (transaction end)
-        if (nCS_postFF == 1'b1 && nCS_postFF_prev == 1'b0) begin
-            transaction_ready <= 1'b1;
-        end
-        
-        // Detect rising edge of SCLK and sample data
-        if (SCLK_postFF == 1'b1 && SCLK_postFF_prev == 1'b0) begin
-            if (nCS_postFF == 1'b0) begin
-                transaction_dat[transaction_curr_bit] <= COPI_postFF;
-                transaction_curr_bit <= transaction_curr_bit - 1;
+        else if (sync_nCS == 2'b00 && sync_SCLK == 2'b01) begin
+            if (sCLKcnt != 5'b10000) begin
+                data[15 - sCLKcnt] <= sync_COPI[SYNC-1];
+                sCLKcnt <= sCLKcnt + 1;
             end
         end
-        
-        // Handle processed flag clearing in the same block
-        if (transaction_ready && transaction_processed) begin
-            transaction_ready <= 1'b0;
+
+        if(sCLKcnt == 5'b10000 && data[15] == 1'b1)begin
+            case (data[14:8]) 
+                7'b0000000: en_reg_out_7_0 <= data[7:0];
+                7'b0000001: en_reg_out_15_8 <= data[7:0];
+                7'b0000010: en_reg_pwm_7_0 <= data[7:0];
+                7'b0000011: en_reg_pwm_15_8 <= data[7:0];
+                7'b0000100: pwm_duty_cycle <= data[7:0];
+                default: ;
+                //if address isnt one of them, just dont assign anything
+            endcase
         end
     end
 end
-
-// Update registers only after the complete transaction has finished and been validated
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        transaction_processed <= 1'b0;
-    end 
-    else if (transaction_ready && !transaction_processed) begin
-        // Transaction is ready and not yet processed
-        if(transaction_dat[15] == 0) begin //read block
-            
-            //ignore read command
-            if(transaction_dat[14:8] > MAX_ADDR) begin
-                //no valid data as address is out of range
-                addr <= 3'b111; //invalid address
-            end
-            else addr <= transaction_dat[10:8];
-        end
-        else begin //write block
-            if(transaction_dat[14:8] > MAX_ADDR) begin
-                //no valid data as address is out of range
-                addr <= 3'b111; //invalid address
-            end
-            else begin
-                addr <= transaction_dat[10:8];
-                SPI_regs[transaction_dat[10:8]] <= transaction_dat[7:0];
-            end
-        end
-        // Set the processed flag
-        transaction_processed <= 1'b1;
-    end else if (transaction_ready && transaction_processed) begin
-        // Reset processed flag when ready flag is cleared
-        transaction_processed <= 1'b0;
-        //transaction_ready <= 0;
-        
-    end
-end
-
-//drive outputs on register update
-assign en_reg_out_7_0 = SPI_regs[0];
-assign en_reg_out_15_8 = SPI_regs[1];
-assign en_reg_pwm_7_0 = SPI_regs[2];
-assign en_reg_pwm_15_8 = SPI_regs[3];
-assign pwm_duty_cycle = SPI_regs[4];
-assign addr_out = addr;
 
 endmodule
