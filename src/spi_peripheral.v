@@ -13,7 +13,6 @@ module spi_peripheral #(
     output reg [7:0] en_reg_pwm_7_0,
     output reg [7:0] en_reg_pwm_15_8,
     output reg [7:0] pwm_duty_cycle,
-    output reg [2:0] addr_out
 );
 
 reg [4:0] curr_bit; 
@@ -27,7 +26,6 @@ always @(posedge clk or negedge rst_n) begin
 
     if (!rst_n) begin //reset state
         curr_bit <= 5'b0;
-        transaction_done <= 1'b0;
         transaction_data <= 16'b0;
 
         SCLK_sync <= 0;
@@ -47,12 +45,11 @@ always @(posedge clk or negedge rst_n) begin
         
         if(nCS_sync == 2'b10) begin //negedge. begin data capture
             curr_bit <= 5'b0;
-            transaction_done <= 1'b0;
             transaction_data <= 16'b0;
         end
 
         else if (nCS_sync == 2'b00 && SCLK_sync == 2'b01) begin //posedge detect SCLK when data is valid
-            if (!transaction_done) begin
+            if (curr_bit!=5'b10000) begin
                     transaction_data[15 - curr_bit] <= COPI_sync[SYNC_FLOPS-1];
                     curr_bit <= curr_bit + 1;
                 end
