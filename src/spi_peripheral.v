@@ -9,12 +9,12 @@ module spi_peripheral #(
     input wire       clk,//
     input wire       rst_n,// 
 
-    output wire [7:0] en_reg_out_7_0,
-    output wire [7:0] en_reg_out_15_8, 
-    output wire [7:0] en_reg_pwm_7_0,
-    output wire [7:0] en_reg_pwm_15_8,
-    output wire [7:0] pwm_duty_cycle,
-    output wire [2:0] addr_out
+    output reg [7:0] en_reg_out_7_0,
+    output reg [7:0] en_reg_out_15_8, 
+    output reg [7:0] en_reg_pwm_7_0,
+    output reg [7:0] en_reg_pwm_15_8,
+    output reg [7:0] pwm_duty_cycle,
+    output reg [2:0] addr_out
 );
 
 reg [3:0] curr_bit; 
@@ -43,9 +43,9 @@ always @(posedge clk or negedge rst_n) begin
         pwm_duty_cycle <= 8'b0;
     end else begin
         //capture on clock cycle
-        SCLK_sync <= {{SCLK_sync[SYNC-2]}{SCLK}};
-        COPI_sync <= {{SCLK_sync[SYNC-2]}{SCLK}};
-        nCS_sync <= {{SCLK_sync[SYNC-2]}{SCLK}};
+        SCLK_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
+        COPI_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
+        nCS_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
         
         if(nCS_sync == 2'b10) begin //negedge. begin data capture
             curr_bit <= 4'b0;
@@ -53,9 +53,9 @@ always @(posedge clk or negedge rst_n) begin
             transaction_data <= 16'b0;
         end
 
-        else if (nCS_sync == 2'b00 && sync_SCLK == 2'b01) begin //posedge detect SCLK when data is valid
+        else if (nCS_sync == 2'b00 && SCLK_sync == 2'b01) begin //posedge detect SCLK when data is valid
             if (!transaction_done) begin
-                    transaction_data[15 - curr_bit] <= COPI_sync[SYNC-1];
+                    transaction_data[15 - curr_bit] <= COPI_sync[SYNC_FLOPS-1];
                     if(curr_bit + 1 == 4'b0) begin
                         transaction_done <= 1'b1;
                     end
