@@ -61,7 +61,7 @@ always @(posedge clk or negedge rst_n) begin
                     curr_bit <= curr_bit + 1;
                 end
         if(transaction_done <= 1'b1 && transaction_data[15] == 1'b1)begin
-            case (data[14:8]) 
+            case (transaction_data[14:8]) 
                 7'b0000000: en_reg_out_7_0 <= transaction_data[7:0];
                 7'b0000001: en_reg_out_15_8 <= transaction_data[7:0];
                 7'b0000010: en_reg_pwm_7_0 <= transaction_data[7:0];
