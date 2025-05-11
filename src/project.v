@@ -18,8 +18,6 @@ module tt_um_uwasic_onboarding_matthew_chen(
     //input  wire [1:0] test_mode // debugger. unsupported by make. moved to ui_in[4:3]
 );
 
-  assign uio_oe = 8'hFF;
-
 // always@(*) begin
 //   case(addr_out)
 //     7'd0: uo_out <= en_reg_out_7_0;
@@ -31,20 +29,13 @@ module tt_um_uwasic_onboarding_matthew_chen(
 //   endcase
 // end
 
-  wire [7:0] pwm_uo_out;
+  wire [15:0] out;
   
-  assign uo_out = (ui_in[4:3] == 2'd1) ? 
-                  // Inner case for addr_out when ui_in[4:3] == 1
-                  ((addr_out == 0) ? en_reg_out_7_0 :
-                   (addr_out == 1) ? en_reg_out_15_8 :
-                   (addr_out == 2) ? en_reg_pwm_7_0 :
-                   (addr_out == 3) ? en_reg_pwm_15_8 :
-                   (addr_out == 4) ? pwm_duty_cycle :
-                   8'b0) :
-                // Remaining cases (2, 3, default) all map to pwm_uo_out
-                pwm_uo_out;
+  assign uo_out  = out[7:0];
+  assign uio_out = out[15:8];
+  assign uio_oe  = 0;
 
-    // Create wires to refer to the values of the registers
+    // Create wires to connect to the values of the registers
   wire [7:0] en_reg_out_7_0;
   wire [7:0] en_reg_out_15_8;
   wire [7:0] en_reg_pwm_7_0;
@@ -61,10 +52,10 @@ module tt_um_uwasic_onboarding_matthew_chen(
       .en_reg_pwm_15_8(en_reg_pwm_15_8),
       .pwm_duty_cycle(pwm_duty_cycle),
       //.out()
-      .out({uio_out, pwm_uo_out}) //[15:8] to uio, [7:0] to uo
+      .out(out) //[15:8] to uio, [7:0] to uo
     );
     // Add uio_in and ui_in[7:5] to the list of unused signals:
-    wire _unused = &{ena, ui_in[7:5], uio_in, 1'b0};
+    wire _unused = &{ena, ui_in[7:3], uio_oe, uio_in, 1'b0};
 
    spi_peripheral spi_peripheral_inst (
       .SCLK(ui_in[0]),
@@ -77,8 +68,7 @@ module tt_um_uwasic_onboarding_matthew_chen(
       .en_reg_out_15_8(en_reg_out_15_8),
       .en_reg_pwm_7_0(en_reg_pwm_7_0),
       .en_reg_pwm_15_8(en_reg_pwm_15_8),
-      .pwm_duty_cycle(pwm_duty_cycle),
-      .addr_out(addr_out)
+      .pwm_duty_cycle(pwm_duty_cycle)
     );
 
 endmodule
