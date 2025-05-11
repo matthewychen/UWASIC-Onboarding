@@ -61,15 +61,14 @@ always @(posedge clk or negedge rst_n) begin
                     end
                     curr_bit <= curr_bit + 1;
                 end
-        if(sCLKcnt == 5'b10000 && data[15] == 1'b1)begin
+        if(transaction_done <= 1'b1 && transaction_data[15] == 1'b1)begin
             case (data[14:8]) 
-                7'b0000000: en_reg_out_7_0 <= data[7:0];
-                7'b0000001: en_reg_out_15_8 <= data[7:0];
-                7'b0000010: en_reg_pwm_7_0 <= data[7:0];
-                7'b0000011: en_reg_pwm_15_8 <= data[7:0];
-                7'b0000100: pwm_duty_cycle <= data[7:0];
+                7'b0000000: en_reg_out_7_0 <= transaction_data[7:0];
+                7'b0000001: en_reg_out_15_8 <= transaction_data[7:0];
+                7'b0000010: en_reg_pwm_7_0 <= transaction_data[7:0];
+                7'b0000011: en_reg_pwm_15_8 <= transaction_data[7:0];
+                7'b0000100: pwm_duty_cycle <= transaction_data[7:0];
                 default: ;
-                //if address isnt one of them, just dont assign anything
             endcase
         end
         end
