@@ -16,7 +16,7 @@ module spi_peripheral #(
     output reg [2:0] addr_out
 );
 
-reg [3:0] curr_bit; 
+reg [4:0] curr_bit; 
 reg transaction_done;
 reg [15:0] transaction_data;
 
@@ -27,7 +27,7 @@ reg [SYNC_FLOPS-1:0] nCS_sync;
 always @(posedge clk or negedge rst_n) begin
 
     if (!rst_n) begin //reset state
-        curr_bit <= 4'b0;
+        curr_bit <= 5'b0;
         transaction_done <= 1'b0;
         transaction_data <= 16'b0;
 
@@ -47,7 +47,7 @@ always @(posedge clk or negedge rst_n) begin
         nCS_sync <= {nCS_sync[SYNC_FLOPS-2:0], nCS};     // Use nCS_sync
         
         if(nCS_sync == 2'b10) begin //negedge. begin data capture
-            curr_bit <= 4'b0;
+            curr_bit <= 5'b0;
             transaction_done <= 1'b0;
             transaction_data <= 16'b0;
         end
@@ -55,12 +55,9 @@ always @(posedge clk or negedge rst_n) begin
         else if (nCS_sync == 2'b00 && SCLK_sync == 2'b01) begin //posedge detect SCLK when data is valid
             if (!transaction_done) begin
                     transaction_data[15 - curr_bit] <= COPI_sync[SYNC_FLOPS-1];
-                    if(curr_bit + 1 == 4'b0) begin
-                        transaction_done <= 1'b1;
-                    end
                     curr_bit <= curr_bit + 1;
                 end
-        if(transaction_done == 1'b1 && transaction_data[15] == 1'b1)begin
+        if(curr_bit[4] == 1'b1 && transaction_data[15] == 1'b1)begin
             case (transaction_data[14:8]) 
                 7'b0000000: en_reg_out_7_0 <= transaction_data[7:0];
                 7'b0000001: en_reg_out_15_8 <= transaction_data[7:0];
