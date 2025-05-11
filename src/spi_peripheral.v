@@ -17,7 +17,6 @@ module spi_peripheral #(
 );
 
 reg [4:0] curr_bit; 
-reg transaction_done;
 reg [15:0] transaction_data;
 
 reg [SYNC_FLOPS-1:0] SCLK_sync;
@@ -57,7 +56,8 @@ always @(posedge clk or negedge rst_n) begin
                     transaction_data[15 - curr_bit] <= COPI_sync[SYNC_FLOPS-1];
                     curr_bit <= curr_bit + 1;
                 end
-        if(curr_bit[4] == 1'b1 && transaction_data[15] == 1'b1)begin
+        end
+        if(curr_bit[4] == 1'b1 && transaction_data[15] == 1'b1) begin
             case (transaction_data[14:8]) 
                 7'b0000000: en_reg_out_7_0 <= transaction_data[7:0];
                 7'b0000001: en_reg_out_15_8 <= transaction_data[7:0];
@@ -66,7 +66,6 @@ always @(posedge clk or negedge rst_n) begin
                 7'b0000100: pwm_duty_cycle <= transaction_data[7:0];
                 default: ;
             endcase
-        end
         end
     end
 end
