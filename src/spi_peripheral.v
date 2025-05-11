@@ -42,9 +42,9 @@ always @(posedge clk or negedge rst_n) begin
         pwm_duty_cycle <= 8'b0;
     end else begin
         //capture on clock cycle
-        SCLK_sync <= {SCLK_sync[SYNC_FLOPS-2], SCLK};
-        COPI_sync <= {SCLK_sync[SYNC_FLOPS-2], COPI};
-        nCS_sync <= {SCLK_sync[SYNC_FLOPS-2], nCS};
+        SCLK_sync <= {SCLK_sync[SYNC_FLOPS-2:0], SCLK};
+        COPI_sync <= {COPI_sync[SYNC_FLOPS-2:0], COPI};  // Use COPI_sync
+        nCS_sync <= {nCS_sync[SYNC_FLOPS-2:0], nCS};     // Use nCS_sync
         
         if(nCS_sync == 2'b10) begin //negedge. begin data capture
             curr_bit <= 4'b0;
@@ -60,7 +60,7 @@ always @(posedge clk or negedge rst_n) begin
                     end
                     curr_bit <= curr_bit + 1;
                 end
-        if(transaction_done <= 1'b1 && transaction_data[15] == 1'b1)begin
+        if(transaction_done == 1'b1 && transaction_data[15] == 1'b1)begin
             case (transaction_data[14:8]) 
                 7'b0000000: en_reg_out_7_0 <= transaction_data[7:0];
                 7'b0000001: en_reg_out_15_8 <= transaction_data[7:0];
