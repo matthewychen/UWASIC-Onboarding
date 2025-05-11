@@ -1,5 +1,4 @@
 module spi_peripheral #(
-    parameter MAX_ADDR = 4,
     parameter SYNC_FLOPS = 2
 )
 (
@@ -43,9 +42,9 @@ always @(posedge clk or negedge rst_n) begin
         pwm_duty_cycle <= 8'b0;
     end else begin
         //capture on clock cycle
-        SCLK_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
-        COPI_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
-        nCS_sync <= {{SCLK_sync[SYNC_FLOPS-2]}{SCLK}};
+        SCLK_sync <= {SCLK_sync[SYNC_FLOPS-2], SCLK};
+        COPI_sync <= {SCLK_sync[SYNC_FLOPS-2], COPI};
+        nCS_sync <= {SCLK_sync[SYNC_FLOPS-2], nCS};
         
         if(nCS_sync == 2'b10) begin //negedge. begin data capture
             curr_bit <= 4'b0;
